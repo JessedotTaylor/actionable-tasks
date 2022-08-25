@@ -21,18 +21,29 @@ export class TaskEditDialogEntryComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.openDialog()
+        this.getTask();
     }
 
-    openDialog() {
+    getTask() {
         let taskId = this.route.snapshot.paramMap.get('taskId')!;
-        let task: ITask | undefined;
-        if (taskId && taskId != 'new') {
-            task = this.taskService.getTaskById(taskId);
-            if (!task) {
-                console.warn(`Task not found for id: ${taskId}`);
+        if (taskId) {
+            if (taskId != 'new') {
+                this.taskService.getById(taskId).subscribe(task => {
+                    if (task) {
+                        this.openDialog(task)
+                    } else {
+                        console.warn(`Task not found for id: ${this.route.snapshot.paramMap.get('taskId')}`)
+                    }
+                })
+            } else {
+                this.openDialog()
             }
+        } else {
+            console.warn(`Entered the TaskEditDialogEntryComponent with no taskId: ${taskId}`)
         }
+    }
+
+    openDialog(task?: ITask) {
         const dialogRef = this.dialog.open(TaskEditDialogComponent, {
             data: task,
             height: '100%',
@@ -44,7 +55,6 @@ export class TaskEditDialogEntryComponent implements OnInit {
                 'top': '0'
             }
         });
-
         dialogRef.afterClosed().subscribe((result: {action: 'save' | 'delete', data: ITask}) => {
             if (result) {
                 switch (result.action) {
@@ -52,7 +62,7 @@ export class TaskEditDialogEntryComponent implements OnInit {
                         this.taskService.saveTask(result.data);
                         break;
                     case 'delete':
-                        this.taskService.removeTask(result.data._id);
+                        this.taskService.remove(result.data._id);
                         break;
                     default:
                         console.warn(`!TaskEditDialogEntryComponent - afterClosed - Unknown action - ${result.action} (${JSON.stringify(result)})`);
@@ -60,6 +70,6 @@ export class TaskEditDialogEntryComponent implements OnInit {
                 }
             }
             this.router.navigate(['../'], {relativeTo: this.route})
-        })
+        });
     }
 }

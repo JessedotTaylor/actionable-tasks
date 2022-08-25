@@ -12,7 +12,7 @@ import { getDirtyValues } from 'src/app/utils/Form';
 })
 export class TaskEditDialogComponent implements OnInit {
   taskForm = this.fb.group({
-    _id: this.fb.control(this.taskService.generateId(), Validators.required),
+    _id: this.fb.control<string | undefined>(undefined),
     title: this.fb.control('', Validators.required),
     comments: this.fb.array<string>([]),
     group: this.fb.control('', Validators.required),

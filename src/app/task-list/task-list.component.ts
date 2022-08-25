@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { ITask } from '../interfaces/ITask';
 import { TaskService } from '../task.service';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-task-list',
@@ -11,7 +10,6 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
   styleUrls: ['./task-list.component.sass']
 })
 export class TaskListComponent implements OnInit {
-  // tasks$!: Observable<ITask[]>;
   tasks$!: Observable<ITask[]>;
 
 
@@ -20,17 +18,11 @@ export class TaskListComponent implements OnInit {
   constructor(
     private taskService: TaskService,
     private router: Router,
-    firestore: AngularFirestore
   ) {
-    this.tasks$ = firestore.collection('tasks').valueChanges({idField: '_id'}) as Observable<ITask[]>;
-    this.tasks$.subscribe(changes => {
-      console.log(changes);
-    })
   }
 
   ngOnInit(): void {
-    // this.tasks$ = this.taskService.dataSubject.asObservable();
-    
+    this.tasks$ = this.taskService.get();
   }
 
   onAddClick() {

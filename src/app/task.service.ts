@@ -1,43 +1,43 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { TASKS } from './data/TASKS';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Observable } from 'rxjs';
 import { ITask } from './interfaces/ITask';
 @Injectable({
   providedIn: 'root'
 })
 export class TaskService {
-  dataSubject = new BehaviorSubject(TASKS);
-
-  get data(): ITask[] {
-    return this.dataSubject.value;
+  constructor(
+    private db: AngularFirestore
+  ) {
+  }
+  get():Observable<ITask[]> {
+    return this.db.collection<ITask>('tasks').valueChanges({idField: '_id'});
   }
 
-  getTaskById(id?: string): ITask | undefined {
-    if (id) {
-      return this.data.find(t => t._id == id)
-    } 
-    return;
+  getById(id: string): Observable<ITask | undefined> {
+    return this.db.collection<ITask>('tasks').doc(id).valueChanges({idField: '_id'});
   }
 
-  removeTask(id: string) {
-    let data = this.data.filter(t => t._id != id);
-    this.dataSubject.next(data);
+  remove(id: string) {
+    return this.db.collection('tasks').doc(id).delete();
+  }
+
+  update(id: string, data: Partial<ITask>) {
+    return this.db.collection('tasks').doc(id).update(data);
+  }
+
+  create(data: Partial<ITask>) {
+    return this.db.collection('tasks').add({
+      ...data
+      // User auth
+    })
   }
 
   saveTask(update: Partial<ITask>) {
-    let data = this.data;
-    let index = data.findIndex(t => t._id == update._id);
-    if (index >= 0) {
-      data[index] = {
-        ...data[index],
-        ...update
-      }
+    if (update._id) {
+      this.update(update._id, update);
     } else {
-      data.push(update as ITask)
+      this.create(update);
     }
-  }
-
-  generateId(): string {
-    return Math.round(Math.random() * 100).toFixed(0)
   }
 }
