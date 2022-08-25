@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "actionable-tasks": {
+      "hosting": {
+        "actionable-tasks": [
+          "actionable-tasks"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "actionable-tasks"
+  }
+}
