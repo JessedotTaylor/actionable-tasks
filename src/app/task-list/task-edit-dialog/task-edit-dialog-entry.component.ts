@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
+import { Subscription } from "rxjs";
 import { ITask } from "src/app/interfaces/ITask";
 import { TaskService } from "src/app/task.service";
 import { TaskEditDialogComponent } from "./task-edit-dialog.component";
@@ -20,8 +21,16 @@ export class TaskEditDialogEntryComponent implements OnInit {
 
     }
 
+    dialogRef: MatDialogRef<TaskEditDialogComponent> | undefined;
+    subscription: Subscription | undefined;
+
     ngOnInit(): void {
-        this.getTask();
+        this.route.params.subscribe(changes => {
+            this.subscription?.unsubscribe();
+            this.dialogRef?.close();
+            
+            this.getTask();
+        })
     }
 
     getTask() {
@@ -44,7 +53,7 @@ export class TaskEditDialogEntryComponent implements OnInit {
     }
 
     openDialog(task?: ITask) {
-        const dialogRef = this.dialog.open(TaskEditDialogComponent, {
+        this.dialogRef = this.dialog.open(TaskEditDialogComponent, {
             data: task,
             height: '100%',
             width: '20%',
@@ -55,7 +64,7 @@ export class TaskEditDialogEntryComponent implements OnInit {
                 'top': '0'
             }
         });
-        dialogRef.afterClosed().subscribe((result: {action: 'update' | 'create' | 'delete', id: string; changes: Partial<ITask>}) => {
+        this.subscription = this.dialogRef.afterClosed().subscribe((result: {action: 'update' | 'create' | 'delete', id: string; changes: Partial<ITask>}) => {
             if (result) {
                 switch (result.action) {
                     case 'update':

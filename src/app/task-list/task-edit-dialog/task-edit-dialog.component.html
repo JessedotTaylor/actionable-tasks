@@ -1,7 +1,7 @@
 <div class="header">
   <div class="nav-cluster">
-    <button mat-icon-button *ngIf="data"><mat-icon>chevron_left</mat-icon></button>
-    <button mat-icon-button *ngIf="data"><mat-icon>chevron_right</mat-icon></button>
+    <button mat-icon-button *ngIf="data" (click)="onDirClick('back')" [disabled]="selfIndex <= 0"><mat-icon>chevron_left</mat-icon></button>
+    <button mat-icon-button *ngIf="data" (click)="onDirClick('for')" [disabled]="selfIndex == dataLength && dataLength != undefined"><mat-icon>chevron_right</mat-icon></button>
   </div>
   <button mat-icon-button mat-dialog-close><mat-icon>close</mat-icon></button>
 </div>

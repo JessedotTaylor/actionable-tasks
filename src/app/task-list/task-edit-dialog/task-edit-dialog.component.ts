@@ -1,7 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { ITask } from 'src/app/interfaces/ITask';
+import { TaskService } from 'src/app/task.service';
 import { getDirtyValues } from 'src/app/utils/Form';
 
 @Component({
@@ -20,16 +22,21 @@ export class TaskEditDialogComponent implements OnInit {
     createdAt: new Date()
   });
 
+  selfIndex: number = 99;
+  dataLength: number | undefined;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ITask | undefined,
     private dialogRef: MatDialogRef<TaskEditDialogComponent>,
-    private fb: NonNullableFormBuilder
+    private fb: NonNullableFormBuilder,
+    private taskService: TaskService,
+    private router: Router
   ) { }
 
   ngOnInit() {
     if (this.data) {
-      this.generateForm(this.data)
+      this.generateForm(this.data);
+      this.selfIndex = this.getSelfIndex();
     }
   }
 
@@ -43,10 +50,6 @@ export class TaskEditDialogComponent implements OnInit {
       createdAt: task.createdAt,
       tasks: task.tasks
     });
-  }
-
-  exit() {
-
   }
 
   submit() {
@@ -71,6 +74,26 @@ export class TaskEditDialogComponent implements OnInit {
 
   delete() {
     this.dialogRef.close({action: 'delete', id: this.taskForm.get('_id')?.value});
+  }
+
+  getSelfIndex(): number {
+    let data = this.taskService.data;
+    this.dataLength = data.length - 1;
+    let foundIndex = data.findIndex(t => t._id == this.data?._id);
+    return foundIndex;
+  }
+ 
+  onDirClick(direction: 'back' | 'for') {
+    let index = this.selfIndex;
+    if (direction == 'back') {
+      index--;
+    } else if (direction == 'for') {
+      index++;
+    } 
+    let data = this.taskService.data;
+
+    let nextTask = data[index];
+    this.router.navigate([`../${nextTask._id}`]);
   }
 
 }
