@@ -1,7 +1,7 @@
 export interface ITask {
     _id: string;
     title: string;
-    // message?: string;
+    description?: string;
     createdAt: Date;
     // resolution: {
     //   resolved: boolean;

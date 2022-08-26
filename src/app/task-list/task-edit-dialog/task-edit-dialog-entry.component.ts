@@ -55,14 +55,17 @@ export class TaskEditDialogEntryComponent implements OnInit {
                 'top': '0'
             }
         });
-        dialogRef.afterClosed().subscribe((result: {action: 'save' | 'delete', data: ITask}) => {
+        dialogRef.afterClosed().subscribe((result: {action: 'update' | 'create' | 'delete', id: string; changes: Partial<ITask>}) => {
             if (result) {
                 switch (result.action) {
-                    case 'save':
-                        this.taskService.saveTask(result.data);
+                    case 'update':
+                        this.taskService.update(result.id, result.changes);
+                        break;
+                    case 'create':
+                        this.taskService.create(result.changes);
                         break;
                     case 'delete':
-                        this.taskService.remove(result.data._id);
+                        this.taskService.remove(result.id);
                         break;
                     default:
                         console.warn(`!TaskEditDialogEntryComponent - afterClosed - Unknown action - ${result.action} (${JSON.stringify(result)})`);

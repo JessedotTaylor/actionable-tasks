@@ -7,10 +7,11 @@
   <mat-card *ngFor="let task of tasks$ | async" class="card" (click)="onCardClick(task)">
     <div class="row">
       <h2>{{task.title}}</h2>
+      <p class="icon-count">{{task.comments.length}} <mat-icon>comment</mat-icon></p>
     </div>
     <div class="row">
-      <p>{{getComment(task)}}</p>
-      <p>{{task.tasks.length}} Tasks</p>
+      <p>{{task.description}}</p>
+      <p class="icon-count">{{task.tasks.length}} <mat-icon>assignment</mat-icon></p>
     </div>
 
   </mat-card>
