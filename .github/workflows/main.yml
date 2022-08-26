@@ -15,13 +15,6 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  pre:
-    name: pre-checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log Secrets
-        run: echo "${{ secrets.FIREBASE_TOKEN }}"
-  # This workflow contains a single job called "build"
   build:
     name: Build
     # The type of runner that the job will run on
@@ -33,10 +26,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: '16.x'
+      # - name: Setup Node
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: '16.x'
 
       - name: NPM ci
         run: npm ci
@@ -49,11 +42,7 @@ jobs:
         with: 
           name: dist
           path: dist
-      # - name: Install firebase tools
-      #   run: npm install --save-dev firebase-tools
 
-      # - name: Install angular cli
-      #   run: npm install @anglar/cli
   deploy:
     name: Deploy
     needs: build
@@ -74,5 +63,3 @@ jobs:
           args: deploy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-      # - name: ng deploy
-      #   run: firebase deploy --token "$FIREBASE_TOKEN"
