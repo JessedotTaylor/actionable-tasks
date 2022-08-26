@@ -36,8 +36,11 @@ jobs:
       - name: Install firebase tools
         run: npm install --save-dev firebase-tools
 
-      - name: Install angular cli
-        run: npm install @anglar/cli
+      # - name: Install angular cli
+      #   run: npm install @anglar/cli
+
+      - name: Build
+        run: npm run build:prod
         
       - name: ng deploy
-        run: ng deploy --token "$FIREBASE_TOKEN"
+        run: firebase deploy --token "$FIREBASE_TOKEN"
