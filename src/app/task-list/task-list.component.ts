@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map, Observable, Subscription } from 'rxjs';
 import { ITask } from '../interfaces/ITask';
 import { TaskService } from '../task.service';
 
@@ -12,25 +12,44 @@ import { TaskService } from '../task.service';
 export class TaskListComponent implements OnInit {
   tasks$!: Observable<ITask[]>;
 
+  levels: string[] = [];
+  levelFilter: string | undefined;
 
   routeSubscription: Subscription | undefined;
   
   constructor(
     private taskService: TaskService,
     private router: Router,
+    private route: ActivatedRoute
   ) {
   }
 
   ngOnInit(): void {
-    this.tasks$ = this.taskService.get();
+    this.levels = this.taskService.levels;
+
+    this.route.paramMap.subscribe(params => {
+      this.levelFilter = params.get('level')?.toLowerCase();
+      this.tasks$ = this.taskService.get()
+      .pipe(
+        map(tasks => {
+          if (this.levelFilter && this.levelFilter != 'main') {
+            let filter =  tasks.filter(task => task.level.toLowerCase() == this.levelFilter);
+            return filter;
+          } else {
+            return tasks;
+          }
+        })
+      );
+  
+    })
   }
 
   onAddClick() {
-    this.router.navigate(['/new']);
+    this.router.navigate(['new'], {relativeTo: this.route});
   }
 
   onCardClick(task: ITask) {
-    this.router.navigate([`/${task._id}`]);
+    this.router.navigate([`${task._id}`], {relativeTo: this.route});
   }
 
   getComment(task: ITask): string {

@@ -9,25 +9,37 @@ import { getNewObservable } from './utils/Observable';
 export class TaskService {
   private dataSubscription: Observable<ITask[]>;
   private dataSubject: BehaviorSubject<ITask[]> = new BehaviorSubject<ITask[]>([]);
+
+  private levelsSubject: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
+
   constructor(
     private db: AngularFirestore
   ) {
     this.dataSubscription = this.db.collection<ITask>('tasks').valueChanges({idField: '_id'});
     this.dataSubscription.subscribe(changes => {
       this.dataSubject.next(changes);
-    })
+    });
+    this.dataSubject.subscribe(changes => {
+      let levels = new Set(changes.map(c => c.level).filter(s => !!s));
+      this.levelsSubject.next(Array.from(levels));
+    });
+
   }
 
   get data(): ITask[] {
     return this.dataSubject.value;
   }
+  get levels(): string[] {
+    return this.levelsSubject.value;
+  }
+
   get(skipCache: boolean = false):Observable<ITask[]> {
     if (!skipCache && this.data.length) {
       return this.dataSubject.asObservable();
     }
     return this.db.collection<ITask>('tasks').valueChanges({idField: '_id'}).pipe(
       map(res => {
-        this.dataSubject.next(res)
+        this.dataSubject.next(res);
         return res;
       })
     );
@@ -40,7 +52,7 @@ export class TaskService {
         return getNewObservable(task);
       }
     }
-    return this.db.collection<ITask>('tasks').doc(id).valueChanges();
+    return this.db.collection<ITask>('tasks').doc(id).valueChanges({idField: '_id'});
   }
 
   remove(id: string) {

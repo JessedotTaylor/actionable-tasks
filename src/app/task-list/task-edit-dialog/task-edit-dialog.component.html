@@ -18,6 +18,24 @@
     <mat-label>Group</mat-label>
     <input matInput type="text" formControlName="group">
   </mat-form-field>
+  <mat-form-field>
+    <mat-label>Level</mat-label>
+    <input matInput formControlName="level" type="text" [matAutocomplete]="auto">
+    <mat-autocomplete #auto>
+      <mat-option *ngFor="let level of levels" [value]="level">
+        {{level}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <div>
+    <div class="row space-between">
+      <h3>Next Steps</h3>
+      <button mat-button (click)="onAddTaskClick()"><mat-icon>add</mat-icon>Next Step</button>
+    </div>
+    <mat-accordion class="task-container">
+      <app-next-step-edit *ngFor="let control of tasks.controls; index as i" [control]="getNextStepForm(i)" [taskId]="taskForm.get('_id')?.value"></app-next-step-edit>
+    </mat-accordion>
+  </div>
 </form>
 
 <div class="footer" mat-dialog-actions>

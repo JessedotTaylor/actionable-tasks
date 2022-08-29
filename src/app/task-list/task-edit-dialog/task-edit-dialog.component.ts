@@ -1,10 +1,20 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { NonNullableFormBuilder, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { ITask } from 'src/app/interfaces/ITask';
+import { Observable } from 'rxjs';
+import { INextStep, ITask } from 'src/app/interfaces/ITask';
 import { TaskService } from 'src/app/task.service';
 import { getDirtyValues } from 'src/app/utils/Form';
+import { NextStepService } from '../next-step.service';
+
+export interface INextStepForm {
+  _id: FormControl<string | undefined>;
+  comment: FormControl<string>;
+  date: FormControl<Date>;
+  owner: FormControl<string>;
+  complete: FormControl<boolean>;
+}
 
 @Component({
   selector: 'app-task-edit-dialog',
@@ -18,19 +28,25 @@ export class TaskEditDialogComponent implements OnInit {
     description: '',
     comments: this.fb.array<string>([]),
     group: this.fb.control('', Validators.required),
-    tasks: this.fb.array([]),
-    createdAt: new Date()
+    nextSteps: this.fb.array<FormGroup<INextStepForm>>([]),
+    createdAt: new Date(),
+    level: this.fb.control('', Validators.required)
   });
 
   selfIndex: number = 99;
   dataLength: number | undefined;
+
+  levels: string[] = [];
+
+  nextSteps$: Observable<INextStep[]> | undefined; 
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ITask | undefined,
     private dialogRef: MatDialogRef<TaskEditDialogComponent>,
     private fb: NonNullableFormBuilder,
     private taskService: TaskService,
-    private router: Router
+    private router: Router,
+    private nextStepService: NextStepService
   ) { }
 
   ngOnInit() {
@@ -38,17 +54,45 @@ export class TaskEditDialogComponent implements OnInit {
       this.generateForm(this.data);
       this.selfIndex = this.getSelfIndex();
     }
+    this.levels = this.taskService.levels;
+  }
+
+  generateNextStepArray(taskId: string) {
+    this.nextStepService.get(taskId).subscribe(tasks => {
+      // Sort tasks: not completed, then by date
+      tasks = tasks.sort((a, b) => {
+        if (a.completed == b.completed) {
+          return a.date.seconds - b.date.seconds
+        }
+        return a.completed ? 1 : -1;
+      });
+      let tasksArray = this.fb.array(tasks.map(nextStep => {
+        return this.generateNextStepForm(nextStep);
+      }));
+      this.taskForm.setControl('nextSteps', tasksArray);
+    })
+  }
+
+  generateNextStepForm(nextStep?: INextStep) {
+    return this.fb.group({
+      _id: this.fb.control<string | undefined>(nextStep?._id),
+      comment: this.fb.control(nextStep?.comment || '', Validators.required),
+      owner: this.fb.control(nextStep?.owner || '', Validators.required),
+      date: this.fb.control(nextStep ? nextStep.date.toDate() : new Date(), Validators.required),
+      complete: this.fb.control(nextStep?.completed || false)
+    })  
   }
 
   generateForm(task: ITask) {
+    this.generateNextStepArray(task._id);
     this.taskForm.patchValue({
       _id: task._id, 
       title: task.title,
       description: task.description,
       comments: task.comments,
       group: task.group,
-      createdAt: task.createdAt,
-      tasks: task.tasks
+      createdAt: new Date(task.createdAt.seconds * 1000),
+      level: task.level
     });
   }
 
@@ -57,7 +101,7 @@ export class TaskEditDialogComponent implements OnInit {
     if (this.data) {
       changes = getDirtyValues(this.taskForm);
     } else {
-      changes = this.taskForm.value;
+      changes = this.taskForm.value as Partial<ITask>;
     }
 
     const id = this.taskForm.get('_id')?.value;
@@ -94,6 +138,18 @@ export class TaskEditDialogComponent implements OnInit {
 
     let nextTask = data[index];
     this.router.navigate([`../${nextTask._id}`]);
+  }
+
+  get tasks(): FormArray {
+    return this.taskForm.get('nextSteps') as FormArray;
+  }
+
+  getNextStepForm(i: number): FormGroup {
+    return this.tasks.at(i) as FormGroup;
+  }
+
+  onAddTaskClick() {
+    this.tasks.push(this.generateNextStepForm())
   }
 
 }

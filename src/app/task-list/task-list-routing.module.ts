@@ -5,7 +5,7 @@ import { TaskListComponent } from './task-list.component';
 
 const routes: Routes = [
     {
-        path: '',
+        path: ':level',
         component: TaskListComponent,
         children: [
             {
@@ -13,6 +13,10 @@ const routes: Routes = [
                 component: TaskEditDialogEntryComponent
             }
         ]
+    },
+    {
+        path: '**',
+        redirectTo: '/main'
     }
 ];
 

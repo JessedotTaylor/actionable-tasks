@@ -11,6 +11,7 @@ import { provideAuth,getAuth } from '@angular/fire/auth';
 import { provideFirestore,getFirestore } from '@angular/fire/firestore';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()),
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    MatNativeDateModule
   ],
   providers: [],
   bootstrap: [AppComponent]

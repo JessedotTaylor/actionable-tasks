@@ -7,14 +7,20 @@
   <mat-card *ngFor="let task of tasks$ | async" class="card" (click)="onCardClick(task)">
     <div class="row">
       <h2>{{task.title}}</h2>
-      <p class="icon-count">{{task.comments.length}} <mat-icon>comment</mat-icon></p>
+      <!-- <p class="icon-count">{{task.comments.length}} <mat-icon>comment</mat-icon></p> -->
     </div>
     <div class="row">
       <p>{{task.description}}</p>
-      <p class="icon-count">{{task.tasks.length}} <mat-icon>assignment</mat-icon></p>
+      <!-- <p class="icon-count">{{task.nextSteps.length}} <mat-icon>assignment</mat-icon></p> -->
     </div>
 
   </mat-card>
+  <div class="no-content" *ngIf="(tasks$ | async)?.length == 0">
+    <h3>No tasks found for level: {{levelFilter}}</h3>
+    <p>Available filters:</p>
+      <a mat-button routerLink="/main">Main</a>
+      <a mat-button *ngFor="let level of levels" [routerLink]="'/' + level">{{level}}</a>
+  </div>
 </div>
 
 <router-outlet></router-outlet>
