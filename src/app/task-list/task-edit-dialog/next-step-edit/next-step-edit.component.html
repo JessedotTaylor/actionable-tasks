@@ -2,9 +2,9 @@
   <mat-expansion-panel-header>
     <mat-panel-title>{{control.get('comment')?.value}}</mat-panel-title>
     <mat-panel-description class="panel-description">
-      <button mat-icon-button color="accent" (click)="onComplete(true)" *ngIf="_id && !control.get('complete')?.value"><mat-icon>check</mat-icon></button>
-      <button mat-mini-fab color="accent" (click)="onComplete(false)" *ngIf="_id && control.get('complete')?.value"><mat-icon>check</mat-icon></button>
+      <app-mark-complete-icon [state]="!control.get('complete')?.value" (click)="onComplete($event)"></app-mark-complete-icon>
       <button mat-mini-fab color="warn" *ngIf="overdue && _id && !control.get('complete')?.value"><mat-icon>calendar_month</mat-icon></button>
+
     </mat-panel-description>
   </mat-expansion-panel-header>
   <form [formGroup]="control">
@@ -28,9 +28,7 @@
       </mat-form-field>
     </div>
 
-    <button mat-stroked-button color="accent" class="w-100" (click)="onComplete(true)" *ngIf="_id && !control.get('complete')?.value"><mat-icon>check</mat-icon>Mark Complete</button>
-    <button mat-raised-button color="accent" class="w-100" (click)="onComplete(false)" *ngIf="_id && control.get('complete')?.value"><mat-icon>check</mat-icon>Completed</button>
-
+    <app-mark-complete class="w-100" *ngIf="_id" [state]="!control.get('complete')?.value" (click)="onComplete($event)"></app-mark-complete>
     <button mat-button *ngIf="control.dirty || !control.get('_id')?.value" (click)="onSave()" class="w-100"><mat-icon>save</mat-icon> Save</button>
 
   </form>

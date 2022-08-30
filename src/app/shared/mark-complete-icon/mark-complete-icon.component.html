@@ -1,0 +1,7 @@
+<div *ngIf="state then resolveButton else completedButton"></div>
+<ng-template #resolveButton>
+  <button mat-icon-button color="accent" (click)="onComplete($event, true)"><mat-icon>check</mat-icon></button>
+</ng-template>
+<ng-template #completedButton>
+  <button mat-mini-fab color="accent" (click)="onComplete($event, false)"><mat-icon>check</mat-icon></button>
+</ng-template>

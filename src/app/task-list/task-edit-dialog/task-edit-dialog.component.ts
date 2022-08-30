@@ -41,7 +41,7 @@ export class TaskEditDialogComponent implements OnInit {
   nextSteps$: Observable<INextStep[]> | undefined; 
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: ITask | undefined,
+    @Inject(MAT_DIALOG_DATA) public data: {task: ITask | undefined, group: string | undefined},
     private dialogRef: MatDialogRef<TaskEditDialogComponent>,
     private fb: NonNullableFormBuilder,
     private taskService: TaskService,
@@ -50,9 +50,13 @@ export class TaskEditDialogComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    if (this.data) {
-      this.generateForm(this.data);
+    if (this.data.task) {
+      this.generateForm(this.data.task);
       this.selfIndex = this.getSelfIndex();
+    } else if (this.data.group) {
+      this.taskForm.patchValue({
+        'group': this.data.group
+      })
     }
     this.levels = this.taskService.levels;
   }
@@ -123,11 +127,11 @@ export class TaskEditDialogComponent implements OnInit {
   getSelfIndex(): number {
     let data = this.taskService.data;
     this.dataLength = data.length - 1;
-    let foundIndex = data.findIndex(t => t._id == this.data?._id);
+    let foundIndex = data.findIndex(t => t._id == this.data.task?._id);
     return foundIndex;
   }
  
-  onDirClick(direction: 'back' | 'for') {
+  onDir(direction: 'back' | 'for') {
     let index = this.selfIndex;
     if (direction == 'back') {
       index--;
@@ -136,8 +140,7 @@ export class TaskEditDialogComponent implements OnInit {
     } 
     let data = this.taskService.data;
 
-    let nextTask = data[index];
-    this.router.navigate([`../${nextTask._id}`]);
+    this.dialogRef.close({action: 'next', id: data[index]._id});
   }
 
   get tasks(): FormArray {
@@ -150,6 +153,11 @@ export class TaskEditDialogComponent implements OnInit {
 
   onAddTaskClick() {
     this.tasks.push(this.generateNextStepForm())
+  }
+
+  onComplete(state: boolean) {
+    const id = this.data.task!._id;
+    this.taskService.update(id, {resolved: state});
   }
 
 }

@@ -1,21 +1,39 @@
-<div class="list-container">
+<div class="spinner-container" *ngIf="loading">
+  <mat-spinner></mat-spinner>
+</div>
+
+
+<div class="list-container" *ngIf="!loading">
   <div class="list-header">
-    <button mat-stroked-button color="primary" (click)="onAddClick()"><mat-icon>add</mat-icon>Add</button>
+    <button mat-stroked-button color="primary" (click)="onAdd()"><mat-icon>add</mat-icon>Add</button>
   </div>
 
+  <mat-accordion multi>
+    <mat-expansion-panel *ngFor="let key of taskKeys">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{key}}
+        </mat-panel-title>
+        <mat-panel-description class="icon-description">
+          <button mat-icon-button (click)="onAdd(key)"><mat-icon>add</mat-icon></button>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <mat-card *ngFor="let task of taskGroups[key]" class="card" (click)="onCardClick(task)">
+        <div class="row">
+          <h2>{{task.title}}</h2>
+          <app-mark-complete-icon [state]="!task.resolved" [stopPropagation]="true" (click)="onComplete(task, $event)"></app-mark-complete-icon>
+          <!-- <p class="icon-count">{{task.comments.length}} <mat-icon>comment</mat-icon></p> -->
+        </div>
+        <div class="row">
+          <p>{{task.description}}</p>
+          <!-- <p class="icon-count">{{task.nextSteps.length}} <mat-icon>assignment</mat-icon></p> -->
+        </div>
+    
+      </mat-card>
+    </mat-expansion-panel>
+  </mat-accordion>
 
-  <mat-card *ngFor="let task of tasks$ | async" class="card" (click)="onCardClick(task)">
-    <div class="row">
-      <h2>{{task.title}}</h2>
-      <!-- <p class="icon-count">{{task.comments.length}} <mat-icon>comment</mat-icon></p> -->
-    </div>
-    <div class="row">
-      <p>{{task.description}}</p>
-      <!-- <p class="icon-count">{{task.nextSteps.length}} <mat-icon>assignment</mat-icon></p> -->
-    </div>
-
-  </mat-card>
-  <div class="no-content" *ngIf="(tasks$ | async)?.length == 0">
+  <div class="no-content" *ngIf="taskKeys.length == 0">
     <h3>No tasks found for level: {{levelFilter}}</h3>
     <p>Available filters:</p>
       <a mat-button routerLink="/main">Main</a>

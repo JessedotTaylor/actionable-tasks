@@ -22,39 +22,43 @@ export class TaskEditDialogEntryComponent implements OnInit {
     }
 
     dialogRef: MatDialogRef<TaskEditDialogComponent> | undefined;
-    subscription: Subscription | undefined;
+    afterClosedSubscription: Subscription | undefined;
 
     ngOnInit(): void {
         this.route.params.subscribe(changes => {
-            this.subscription?.unsubscribe();
-            this.dialogRef?.close();
+            this.afterClosedSubscription?.unsubscribe();
             
-            this.getTask();
+            let taskId = changes['taskId'];
+            this.getTask(taskId);
         })
     }
 
-    getTask() {
-        let taskId = this.route.snapshot.paramMap.get('taskId')!;
+    getTask(taskId?: string) {
         if (taskId) {
             if (taskId != 'new') {
                 this.taskService.getById(taskId).subscribe(task => {
                     if (task) {
-                        this.openDialog(task)
+                        if (this.dialogRef) {
+                            this.dialogRef.componentInstance.data.task = task;
+                        } else {
+                            this.openDialog(task)
+                        }
                     } else {
                         console.warn(`Task not found for id: ${this.route.snapshot.paramMap.get('taskId')}`)
                     }
                 })
             } else {
-                this.openDialog()
+                let group = this.route.snapshot.queryParamMap.get('group') ?? undefined;
+                this.openDialog(undefined, group)
             }
         } else {
             console.warn(`Entered the TaskEditDialogEntryComponent with no taskId: ${taskId}`)
         }
     }
 
-    openDialog(task?: ITask) {
+    openDialog(task?: ITask, group?: string) {
         this.dialogRef = this.dialog.open(TaskEditDialogComponent, {
-            data: task,
+            data: {task, group},
             height: '100%',
             width: '20%',
             disableClose: true,
@@ -64,7 +68,8 @@ export class TaskEditDialogEntryComponent implements OnInit {
                 'top': '0'
             }
         });
-        this.subscription = this.dialogRef.afterClosed().subscribe((result: {action: 'update' | 'create' | 'delete', id: string; changes: Partial<ITask>}) => {
+        this.afterClosedSubscription = this.dialogRef.afterClosed().subscribe((result: {action: 'update' | 'create' | 'delete' | 'next', id: string; changes: Partial<ITask>}) => {
+            let routeToPath = '';
             if (result) {
                 switch (result.action) {
                     case 'update':
@@ -76,12 +81,16 @@ export class TaskEditDialogEntryComponent implements OnInit {
                     case 'delete':
                         this.taskService.remove(result.id);
                         break;
+                    case 'next':
+                        this.dialogRef = undefined;
+                        routeToPath = result.id;
+                        break;
                     default:
                         console.warn(`!TaskEditDialogEntryComponent - afterClosed - Unknown action - ${result.action} (${JSON.stringify(result)})`);
                         break;
                 }
             }
-            this.router.navigate(['../'], {relativeTo: this.route})
+            this.router.navigate(['../' + routeToPath], {relativeTo: this.route});
         });
     }
 }

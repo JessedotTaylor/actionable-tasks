@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map, Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ITask } from '../interfaces/ITask';
 import { TaskService } from '../task.service';
 
@@ -10,12 +10,15 @@ import { TaskService } from '../task.service';
   styleUrls: ['./task-list.component.sass']
 })
 export class TaskListComponent implements OnInit {
-  tasks$!: Observable<ITask[]>;
+  taskGroups: {[key: string]: ITask[]} = {};
+  taskKeys: string[] = [];
 
   levels: string[] = [];
   levelFilter: string | undefined;
 
   routeSubscription: Subscription | undefined;
+
+  loading = false;
   
   constructor(
     private taskService: TaskService,
@@ -28,24 +31,41 @@ export class TaskListComponent implements OnInit {
     this.levels = this.taskService.levels;
 
     this.route.paramMap.subscribe(params => {
+      this.loading = true;
       this.levelFilter = params.get('level')?.toLowerCase();
-      this.tasks$ = this.taskService.get()
-      .pipe(
-        map(tasks => {
-          if (this.levelFilter && this.levelFilter != 'main') {
-            let filter =  tasks.filter(task => task.level.toLowerCase() == this.levelFilter);
-            return filter;
-          } else {
-            return tasks;
-          }
-        })
-      );
+      this.taskService.get().subscribe(tasks => {
+        let filteredTasks = this.filterTasks(tasks);
+        let groupedTasks = this.groupTasks(filteredTasks);
+        this.taskGroups = groupedTasks;
+        this.taskKeys = Object.keys(groupedTasks);
+        this.loading = false;
+      })
   
     })
   }
+  
+  filterTasks(tasks: ITask[]): ITask[] {
+    if (this.levelFilter && this.levelFilter != 'main') {
+      return tasks.filter(task => task.level.toLowerCase() == this.levelFilter);
+    } else {
+      return tasks;
+    }
+  }
 
-  onAddClick() {
-    this.router.navigate(['new'], {relativeTo: this.route});
+  groupTasks(tasks: ITask[]): {[key: string]: ITask[]} {
+    let res:{[key: string]: ITask[]} = {};
+    tasks.forEach(task => {
+      if (res[task.group]) {
+        res[task.group].push(task)
+      } else {
+        res[task.group] = [task]
+      }
+    });
+    return res;
+  }
+
+  onAdd(groupKey?: string) {
+    this.router.navigate(['new'], {relativeTo: this.route, queryParams: {group: groupKey}});
   }
 
   onCardClick(task: ITask) {
@@ -59,5 +79,9 @@ export class TaskListComponent implements OnInit {
       endString = `+ ${task.comments.length - END_SLICE} more comments`
     }
     return task.comments.slice(0, END_SLICE).join(' - ') + endString;
+  }
+
+  onComplete(task: ITask, state: boolean) {
+    this.taskService.update(task._id, {resolved: state});
   }
 }

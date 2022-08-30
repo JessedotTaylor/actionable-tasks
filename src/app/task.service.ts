@@ -34,25 +34,16 @@ export class TaskService {
   }
 
   get(skipCache: boolean = false):Observable<ITask[]> {
-    if (!skipCache && this.data.length) {
-      return this.dataSubject.asObservable();
-    }
-    return this.db.collection<ITask>('tasks').valueChanges({idField: '_id'}).pipe(
-      map(res => {
-        this.dataSubject.next(res);
-        return res;
-      })
-    );
+    return this.dataSubject.asObservable();
   }
 
   getById(id: string, skipCache: boolean = false): Observable<ITask | undefined> {
-    if (!skipCache && this.data.length) {
-      let task = this.data.find(t => t._id == id);
-      if (task) {
-        return getNewObservable(task);
-      }
-    }
-    return this.db.collection<ITask>('tasks').doc(id).valueChanges({idField: '_id'});
+    return this.get().pipe(
+      map(res => {
+        let task = res.filter(t => t._id == id);
+        return task.length ? task[0] : undefined;
+      })
+    )
   }
 
   remove(id: string) {
