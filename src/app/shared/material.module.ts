@@ -6,17 +6,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 
 
-const components = [
+const modules = [
   MatCardModule,
   MatButtonModule,
   MatIconModule,
   MatFormFieldModule,
   MatInputModule,
   MatDialogModule,
-  MatProgressSpinnerModule
+  MatProgressSpinnerModule,
+  MatSelectModule
 ]
 
 @NgModule({
@@ -24,8 +26,8 @@ const components = [
   ],
   imports: [
     CommonModule,
-    ...components
+    ...modules
   ],
-  exports: components
+  exports: modules
 })
 export class MaterialModule { }

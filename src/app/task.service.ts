@@ -37,6 +37,10 @@ export class TaskService {
     return this.dataSubject.asObservable();
   }
 
+  getLevels():Observable<string[]> {
+    return this.levelsSubject.asObservable();
+  }
+
   getById(id: string, skipCache: boolean = false): Observable<ITask | undefined> {
     return this.get().pipe(
       map(res => {

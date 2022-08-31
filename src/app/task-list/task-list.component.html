@@ -5,10 +5,36 @@
 
 <div class="list-container" *ngIf="!loading">
   <div class="list-header">
+    <button mat-icon-button (click)="filter.toggle()"><mat-icon>filter_list</mat-icon></button>
     <button mat-stroked-button color="primary" (click)="onAdd()"><mat-icon>add</mat-icon>Add</button>
   </div>
 
   <mat-accordion multi>
+    <mat-expansion-panel #filter>
+      <form [formGroup]="filters" class="panel-body">
+        <mat-form-field >
+          <mat-label>Level</mat-label>
+          <mat-select multiple formControlName="level">
+            <mat-option *ngFor="let level of levels$ | async" [value]="level">{{level | titlecase}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>State</mat-label>
+          <mat-select multiple formControlName="state">
+            <mat-option *ngFor="let state of taskStateKeys" [value]="state">{{state | titlecase}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Search</mat-label>
+          <input matInput type="text" formControlName="search">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <button mat-button (click)="accordion.openAll()">Expand All</button>
+        <button mat-button (click)="accordion.closeAll()">Collapse All</button>
+      </form>
+
+    </mat-expansion-panel>
+
     <mat-expansion-panel *ngFor="let key of taskKeys">
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -34,10 +60,8 @@
   </mat-accordion>
 
   <div class="no-content" *ngIf="taskKeys.length == 0">
-    <h3>No tasks found for level: {{levelFilter}}</h3>
-    <p>Available filters:</p>
-      <a mat-button routerLink="/main">Main</a>
-      <a mat-button *ngFor="let level of levels" [routerLink]="'/' + level">{{level}}</a>
+    <h3>No tasks found matching provided filters</h3>
+    
   </div>
 </div>
 
